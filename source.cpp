@@ -66,10 +66,7 @@ void addPlanes();
 *  a sort function or a updateStats function.  Each turn, it will
 *  delete two plane structs.
 *
-*  In order to determine how many planes can depart, we need to consider
-*  out how many planes are arriving.  If 7 planes with the same amount
-*  of fuel are arriving in 5 time units, we will need to land at least
-*  two planes immediately.
+*  
 *
 *
 */
@@ -108,11 +105,17 @@ void adjustFuel()
 *  Processes two planes, and crashed planes.
 *  Updates crashed stats
 *  Updates stats
+*  In order to determine how many planes can depart, we need to consider
+*  how many planes are arriving, and how many will be arriving.  If 7 
+*  planes with the same amount of fuel are arriving in 5 time units, we 
+*  will need to land at least two planes immediately.  To come to this 
+*  conclusion we may want to look into the beforeTIME list when designing 
+*  our algorithm that determines if and how many planes can depart.  
 */
 void processPlanes()
 {
 	// process two planes
-	// ...
+	// ...algorithm that determines if and how many planes can depart
 
 
 
