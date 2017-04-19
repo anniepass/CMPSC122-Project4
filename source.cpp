@@ -17,21 +17,24 @@ using namespace std;
 struct plane {
 	struct plane *before;
 	struct plane *after;
+	int originalSchedTime;
 	int sched_time;
 	int actual_time;
-	int fuel;
+	double fuel;
+	int tankSize;
 	int passengers;
 	int cargo;
 	bool Fam;
 	bool successful;
+	bool isArriving;
 } *Arrival, *departure;
 
 
-int TIME; // The real time
+int TIME = 0; // The real time
 
 list<plane> arriving;
 list<plane> departing;
-list<plane> crashed; // we may consider having this
+list<plane> beforeTIME; 
 
 int takeOffWaitTime;
 int landingWaitTime;
@@ -45,6 +48,7 @@ int waitTimeGrand;
 int numCargoSafe;
 int cargoDestroyed;
 
+
 // declare methods
 void next();
 void adjustFuel();
@@ -52,6 +56,7 @@ void processPlanes();
 void sortPlanes();
 void printStats();
 void updateStats();
+void addPlanes();
 
 
 
@@ -70,6 +75,7 @@ void updateStats();
 */
 void next()
 {
+	addPlanes();
 	sortPlanes();
 	processPlanes(); //calling this method before adjusting fuel will save more planes(I think)
 	adjustFuel();
@@ -87,8 +93,9 @@ void adjustFuel()
 	for (plane p_d : departing) {
 		p_d.fuel--;
 		if (p_d.fuel < 20) {
-			p_d.fuel += 10;
-			p_d.actual_time += 10;
+			p_d.fuel = p_d.tankSize;
+			p_d.sched_time += 10;
+			beforeTIME.push_back;
 		}
 	}
 
@@ -100,6 +107,7 @@ void adjustFuel()
 /*
 *  Processes two planes, and crashed planes.
 *  Updates crashed stats
+*  Updates stats
 */
 void processPlanes()
 {
@@ -118,7 +126,7 @@ void processPlanes()
 			}
 			cargoDestroyed += p_a.cargo;
 
-
+			arriving.remove(p_a);
 		}
 	}
 }
@@ -131,6 +139,21 @@ void processPlanes()
 void sortPlanes()
 {
 
+}
+
+void addPlanes()
+{
+	for (plane p : beforeTIME)
+	{
+		if (p.sched_time <= TIME) {
+			if (p.isArriving) {
+				arriving.push_back(p);
+			}
+			else {
+				departing.push_back(p);
+			}
+		}
+	}
 }
 
 /*
@@ -175,20 +198,6 @@ void printStats()
 }
 
 
-/*
-*  Updates non-crashed stats
-*/
-void updateStats()
-{
-	for (plane p_a : arriving) {
-
-	}
-
-	for (plane p_d : departing) {
-
-	}
-}
-
 
 int main() {
 	ifstream input;
@@ -196,30 +205,35 @@ int main() {
 	string wait; // variable to allow user to press enter to continue reading file
 
 
-	input.open("V:/CMPSC 122/2017/Final Project/ConsoleApplication1/ConsoleApplication1/myfile", ios::in);//you need a path to your file here
+	input.open("V:/Desktop/planes/myfile.txt", ios::in);//you need a path to your file here
 
 																//while (!input.eof())
+	if (input.is_open())
+	{
+		cout << "working\n";
+	}
+
+
 	while (!input.eof())
 	{
 		//getline(input, line, ','); //this will read the contents between commas one at a time
 		//so underneath you can one at a time place information into their locations in the structure
 
 		getline(input, line, ',');
-		cout << line << endl;
 
 		if (line == "D") {
 			plane p = plane();
 
 			getline(input, line, ',');
+			p.originalSchedTime = std::stoi(line);
 			p.sched_time = std::stoi(line);
-
-			cout << "Working\n";
 
 			getline(input, line, ',');
 			string a_or_d = line;
 
 			getline(input, line, ',');
 			p.fuel = std::stoi(line);
+			p.tankSize = std::stoi(line);
 
 			getline(input, line, ',');
 			p.passengers = std::stoi(line);
@@ -230,7 +244,13 @@ int main() {
 			getline(input, line);
 			line == "Y" ? p.Fam = true : p.Fam = false;
 
-			a_or_d == "A" ? arriving.push_back(p) : departing.push_back(p);
+			if (a_or_d == "A") {
+				p.isArriving = true;
+			}
+			else {
+				p.isArriving = false;
+			}
+		
 		}
 		else if (line == "P") {
 			// Print Statistics
@@ -259,7 +279,7 @@ int main() {
 
 	cout << "hi";
 
-	/*while(!arriving.empty() && !departing.empty()) {
+	/*while(!arriving.empty() || !departing.empty()) {
 	next();
 	}*/
 
