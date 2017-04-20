@@ -29,11 +29,75 @@ struct plane {
     bool isArriving;
     
     // overloaded comparison operators
-    bool operator < ( const plane& other ) const  {
+    // A plane will be greater than another plane if its priority of
+    // arriving/departing is higher
+    bool operator > ( const plane& other ) const  {
+        
+        if(this->fuel < other.fuel) {
+            return true;
+        }
+        if(this->fuel == other.fuel) {
+            if(this->Fam || (!this->Fam && !other.Fam)) {
+                if(other.Fam || (!this->Fam && !other.Fam)) {
+                    if(this->passengers > other.passengers)
+                        return true;
+                    if(this->passengers == other.passengers) {
+                        if(this->cargo > other.cargo)
+                            return true;
+                        else if(this->cargo == other.cargo) {
+                            if(this->originalSchedTime < other.originalSchedTime)
+                                return true;
+                            else
+                                return false;
+                        }
+                        else
+                            return false;
+                    }
+                    else
+                        return false;
+                }
+                else
+                    return true;
+            }
+            else
+                return false;
+        }
+        
         return false;
     }
     
-    bool operator > ( const plane& other ) const  {
+    bool operator < ( const plane& other ) const  {
+        
+        if(this->fuel > other.fuel) {
+            return true;
+        }
+        if(this->fuel == other.fuel) {
+            if(this->Fam || (!this->Fam && !other.Fam)) {
+                if(other.Fam || (!this->Fam && !other.Fam)) {
+                    if(this->passengers > other.passengers)
+                        return false;
+                    if(this->passengers == other.passengers) {
+                        if(this->cargo > other.cargo)
+                            return false;
+                        else if(this->cargo == other.cargo) {
+                            if(this->originalSchedTime < other.originalSchedTime)
+                                return false;
+                            else
+                                return true;
+                        }
+                        else
+                            return true;
+                    }
+                    else
+                        return true;
+                }
+                else
+                    return false;
+            }
+            else
+                return true;
+        }
+        
         return false;
     }
     
@@ -65,7 +129,8 @@ void processPlanes();
 void sortPlanes();
 void printStats();
 void addPlanes();
-void quickSort(list<plane>, int left, int right);
+void quickSort(vector<plane>, int, int);
+void printPlane(plane);
 
 
 /*
@@ -73,10 +138,6 @@ void quickSort(list<plane>, int left, int right);
  *  update fuel, time, vectors, etc.  We can call other methods like
  *  a sort function or a updateStats function.  Each turn, it will
  *  delete two plane structs.
- *
- *
- *
- *
  */
 void next()
 {
@@ -148,21 +209,26 @@ void processPlanes()
  */
 void sortPlanes()
 {
-    
+    if(!arriving.empty())
+        quickSort(arriving, 0, arriving.size() - 1);
+    if(!departing.empty())
+        quickSort(departing, 0, departing.size() - 1);
 }
 
 void addPlanes()
 {
-    for (plane p : beforeTIME)
+    for (int i = 0; i < beforeTIME.size(); i++)
     {
-        if (p.sched_time <= TIME) {
-            if (p.isArriving) {
-                arriving.push_back(p);
+        //if (p.sched_time <= TIME) {
+            if (beforeTIME[i].isArriving) {
+                arriving.push_back(beforeTIME[i]);
+                //beforeTIME.erase(beforeTIME.begin() + i);
             }
             else {
-                departing.push_back(p);
+                departing.push_back(beforeTIME[i]);
+                //beforeTIME.erase(beforeTIME.begin() + i);
             }
-        }
+        //}
     }
 }
 
@@ -180,6 +246,11 @@ void printStats()
     cout << "Amount of cargo that landed safely: " << numCargoSafe << endl;
     cout << "Amount of destroyed Cargo: " << cargoDestroyed << endl;
     cout << "Amount of time it takes to process a input file: " << TIME << endl;
+}
+
+void printPlane(plane p)
+{
+    cout << p.originalSchedTime << "," << p.isArriving << "," << p.fuel << "," << p.passengers << "," << p.cargo << "," << p.Fam << endl;
 }
 
 void quickSort(vector<plane> planes, int left, int right) {
@@ -209,7 +280,8 @@ void quickSort(vector<plane> planes, int left, int right) {
         quickSort(planes, i, right);
 }
 
-int main() {
+int main()
+{
     
     ifstream input;
     string line;
@@ -272,6 +344,13 @@ int main() {
     }
     
     input.close();
+    
+    addPlanes();
+    //sortPlanes();
+    
+    for(plane p : departing) {
+        printPlane(p);
+    }
     
     /*while(!arriving.empty() || !departing.empty()) {
      next();
