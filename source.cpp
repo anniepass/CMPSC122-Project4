@@ -80,7 +80,7 @@ struct plane {
                         if(this->cargo > other.cargo)
                             return false;
                         else if(this->cargo == other.cargo) {
-                            if(this->originalSchedTime < other.originalSchedTime)
+                            if(this->originalSchedTime <= other.originalSchedTime)
                                 return false;
                             else
                                 return true;
@@ -129,7 +129,7 @@ void processPlanes();
 void sortPlanes();
 void printStats();
 void addPlanes();
-void quickSort(vector<plane>, int, int);
+void quickSort(vector<plane>&, int, int);
 void printPlane(plane);
 
 
@@ -253,7 +253,7 @@ void printPlane(plane p)
     cout << p.originalSchedTime << "," << p.isArriving << "," << p.fuel << "," << p.passengers << "," << p.cargo << "," << p.Fam << endl;
 }
 
-void quickSort(vector<plane> planes, int left, int right) {
+void quickSort(vector<plane> &planes, int left, int right) {
     int i = left, j = right;
     plane tmp;
     plane pivot = planes[(left + right) / 2];
@@ -344,13 +344,6 @@ int main()
     }
     
     input.close();
-    
-    addPlanes();
-    //sortPlanes();
-    
-    for(plane p : departing) {
-        printPlane(p);
-    }
     
     /*while(!arriving.empty() || !departing.empty()) {
      next();
