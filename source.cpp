@@ -12,14 +12,12 @@
 #include <string>
 #include <list>
 #include <vector>
-#include <ctime>
 
 using namespace std;
 
 struct plane {
     int originalSchedTime;
     int sched_time;
-    int actual_time;
     double fuel;
     int tankSize;
     int passengers;
@@ -110,17 +108,19 @@ vector<plane> arriving;
 vector<plane> departing;
 vector<plane> beforeTIME;
 
-int takeOffWaitTime;
-int landingWaitTime;
-int numCrash;
-int numDeparting;
-int numArriving;
-int numPeopleSafe;
-int numPeopleKilled;
-int numGrandKilled;
-int waitTimeGrand;
-int numCargoSafe;
-int cargoDestroyed;
+int takeOffWaitTime = 0;
+int landingWaitTime = 0;
+int numCrash = 0;
+int numDeparting = 0;
+int numArriving = 0;
+int numPeopleSafe = 0;
+int numPeopleKilled = 0;
+int numGrandKilled = 0;
+int waitTimeGrand = 0;
+int numCargoSafe = 0;
+int cargoDestroyed = 0;
+int grandChildDeparted = 0;
+int grandChildArrived = 0;
 
 // declare methods
 void next();
@@ -131,6 +131,8 @@ void printStats();
 void addPlanes();
 void quickSort(vector<plane>&, int, int);
 void printPlane(plane);
+void departPlanes(int);
+void landPlanes(int);
 
 
 /*
@@ -155,12 +157,13 @@ void next()
  */
 void adjustFuel()
 {
-    for (plane p : departing) {
-        p.fuel--;
-        if (p.fuel < 20) {
-            p.fuel = p.tankSize;
-            p.sched_time += 10;
-            beforeTIME.push_back(p);
+    for (int i = 0; i < departing.size(); i++) {
+        departing[i].fuel--;
+        if (departing[i].fuel < 20) {
+            departing[i].fuel = departing[i].tankSize;
+            departing[i].sched_time += 10;
+            beforeTIME.push_back(departing[i]);
+            departing.erase(departing.begin() + i);
         }
     }
     
@@ -179,12 +182,35 @@ void adjustFuel()
  *  will need to land at least two planes immediately.  To come to this
  *  conclusion we may want to look into the beforeTIME list when designing
  *  our algorithm that determines if and how many planes can depart.
+ *
+ *  Need to check for big differences in # of passengers
  */
 void processPlanes()
 {
     // process two planes
     // ...algorithm that determines if and how many planes can depart
     
+    
+    if(arriving.size() <= 0) {
+        departPlanes(2);
+    }
+    else if(departing.size() <= 0) {
+        landPlanes(2);
+    }
+    else {
+        bool done = false;
+        for(int i = arriving.size() - 1; i >= 0 && !done; i++) {
+            if(arriving[i].fuel <= (arriving.size() - 1 - i)) {
+                landPlanes(2);
+                done = true;
+            }
+        }
+        
+        if(!done) {
+            landPlanes(1);
+            departPlanes(1);
+        }
+    }
     
     
     //process crashed planes
@@ -201,6 +227,90 @@ void processPlanes()
         }
     }
 }
+
+void departPlanes(int num) {
+    while(!(departing.size() > 0) && num > 0) {
+        plane p = departing[departing.size() - 1];
+        departing.pop_back();
+        numDeparting++;
+        takeOffWaitTime += TIME - p.originalSchedTime;
+        if(p.Fam) {
+            waitTimeGrand += TIME - p.originalSchedTime;
+            grandChildDeparted++;
+        }
+        num--;
+    }
+}
+
+void landPlanes(int num) {
+    while(!arriving.size() > 0 && num > 0) {
+        plane p = arriving[arriving.size() - 1];
+        arriving.pop_back();
+        numArriving++;
+        landingWaitTime += TIME - p.originalSchedTime;
+        numPeopleSafe += p.passengers;
+        numCargoSafe += p.cargo;
+        if(p.Fam) {
+            grandChildArrived++;
+        }
+        num--;
+    }
+}
+
+/*
+void initialize() {
+    
+}
+
+int checkCrashes(vector<plane> planes) {
+    int count = 0;
+    
+    for(plane p : planes) {
+        if(p.fuel < 0)
+            count++;
+    }
+    
+    return count;
+}
+
+void decrementFuel(vector<plane> &planes) {
+    for(plane p : planes) {
+        if(p.isArriving)
+            p.fuel--;
+    }
+}
+
+bool solveNQUtil(int board[N][N], int col)
+{
+    if (col >= N)
+        return true;
+    for (int i = 0; i < N; i++)
+    {
+        if ( isSafe(board, i, col) )
+        {
+            board[i][col] = 1;
+            if (solveNQUtil(board, col + 1) == true)
+                return true;
+            board[i][col] = 0;
+        }
+    }
+    return false;
+}
+
+f findSol(vector<plane> planes, crashCount) {
+    if(planes.size() == 0)
+        return 0;
+    
+    vector<plane> copy1 = planes;
+    vector<plane> copy2 = planes;
+    
+    for(int i = 0; i <= 2; i++) {
+        
+    }
+           
+    
+}*/
+
 
 /*
  *  Sorts the planes into a queue(the first plane will be the next to
@@ -219,30 +329,30 @@ void addPlanes()
 {
     for (int i = 0; i < beforeTIME.size(); i++)
     {
-        //if (p.sched_time <= TIME) {
+        if (beforeTIME[i].sched_time <= TIME) {
             if (beforeTIME[i].isArriving) {
                 arriving.push_back(beforeTIME[i]);
-                //beforeTIME.erase(beforeTIME.begin() + i);
+                beforeTIME.erase(beforeTIME.begin() + i);
             }
             else {
                 departing.push_back(beforeTIME[i]);
-                //beforeTIME.erase(beforeTIME.begin() + i);
+                beforeTIME.erase(beforeTIME.begin() + i);
             }
-        //}
+        }
     }
 }
 
 void printStats()
 {
-    cout << "Average Take off wait time: " << takeOffWaitTime << endl;
-    cout << "Average landing wait time: " << landingWaitTime <<  endl;
+    cout << "Average Take off wait time: " << (double)takeOffWaitTime / numDeparting << endl;
+    cout << "Average landing wait time: " << (double)landingWaitTime / numArriving <<  endl;
     cout << "Number of plan crash: " << numCrash << endl;
     cout << "Number of plans departing: " << numDeparting << endl;
     cout << "Number of planes arriving: " << numArriving << endl;
     cout << "Number of people that landed safely: " << numPeopleSafe << endl;
     cout << "Number of people killed: " << numPeopleKilled << endl;
     cout << "Number of Grandchildren killed: " << numGrandKilled << endl;
-    cout << "Average wait time for a grandchild  Arriving or departing.  (Dead grandchildren not included): " << waitTimeGrand << endl;
+    cout << "Average wait time for a grandchild  Arriving or departing.  (Dead grandchildren not included): " << (double)waitTimeGrand / (grandChildDeparted + grandChildArrived) << endl;
     cout << "Amount of cargo that landed safely: " << numCargoSafe << endl;
     cout << "Amount of destroyed Cargo: " << cargoDestroyed << endl;
     cout << "Amount of time it takes to process a input file: " << TIME << endl;
@@ -326,7 +436,8 @@ int main()
             
             a_or_d == "A" ? p.isArriving = true : p.isArriving = false;
             
-            beforeTIME.push_back(p);
+            if(p.tankSize >= 20)
+                beforeTIME.push_back(p);
         }
         else if (command == 'P') {
             // Print Statistics
@@ -345,7 +456,11 @@ int main()
     
     input.close();
     
-    /*while(!arriving.empty() || !departing.empty()) {
+    
+    while(!arriving.empty() || !departing.empty()) {
      next();
-     }*/
+    }
+    
+    printStats();
+    cout << beforeTIME.size() << endl;
 }
