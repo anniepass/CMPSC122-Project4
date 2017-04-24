@@ -202,6 +202,7 @@ void processPlanes()
         for(int i = arriving.size() - 1; i >= 0 && !done; i++) {
             if(arriving[i].fuel <= (arriving.size() - 1 - i)) {
                 landPlanes(2);
+                cout << TIME << endl;
                 done = true;
             }
         }
@@ -229,7 +230,7 @@ void processPlanes()
 }
 
 void departPlanes(int num) {
-    while(!(departing.size() > 0) && num > 0) {
+    while(departing.size() > 0 && num > 0) {
         plane p = departing[departing.size() - 1];
         departing.pop_back();
         numDeparting++;
@@ -243,7 +244,7 @@ void departPlanes(int num) {
 }
 
 void landPlanes(int num) {
-    while(!arriving.size() > 0 && num > 0) {
+    while(arriving.size() > 0 && num > 0) {
         plane p = arriving[arriving.size() - 1];
         arriving.pop_back();
         numArriving++;
@@ -436,8 +437,7 @@ int main()
             
             a_or_d == "A" ? p.isArriving = true : p.isArriving = false;
             
-            if(p.tankSize >= 20)
-                beforeTIME.push_back(p);
+            beforeTIME.push_back(p);
         }
         else if (command == 'P') {
             // Print Statistics
@@ -456,11 +456,14 @@ int main()
     
     input.close();
     
-    
-    while(!arriving.empty() || !departing.empty()) {
-     next();
+    next();
+    for(plane p : beforeTIME) {
+        printPlane(p);
     }
     
-    printStats();
-    cout << beforeTIME.size() << endl;
+    /*do {
+        next();
+    } while(!arriving.empty() || !departing.empty());*/
+
+    //printStats();
 }
