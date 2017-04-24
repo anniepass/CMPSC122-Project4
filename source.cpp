@@ -164,11 +164,16 @@ void adjustFuel()
             departing[i].sched_time += 10;
             beforeTIME.push_back(departing[i]);
             departing.erase(departing.begin() + i);
+            i--;
         }
     }
     
-    for (plane p : arriving) {
+    /*for (plane p : arriving) {
         p.fuel--;
+    }*/
+    
+    for(int i = 0; i < arriving.size(); i++) {
+        arriving[i].fuel--;
     }
 }
 
@@ -202,7 +207,6 @@ void processPlanes()
         for(int i = arriving.size() - 1; i >= 0 && !done; i++) {
             if(arriving[i].fuel <= (arriving.size() - 1 - i)) {
                 landPlanes(2);
-                cout << TIME << endl;
                 done = true;
             }
         }
@@ -334,10 +338,12 @@ void addPlanes()
             if (beforeTIME[i].isArriving) {
                 arriving.push_back(beforeTIME[i]);
                 beforeTIME.erase(beforeTIME.begin() + i);
+                i--;
             }
             else {
                 departing.push_back(beforeTIME[i]);
                 beforeTIME.erase(beforeTIME.begin() + i);
+                i--;
             }
         }
     }
@@ -445,7 +451,7 @@ int main()
              next();
              }*/
             
-            printStats();
+            //printStats();
         }
         else if (command == 'W') {
             // Wait... How?
@@ -456,14 +462,9 @@ int main()
     
     input.close();
     
-    next();
-    for(plane p : beforeTIME) {
-        printPlane(p);
-    }
-    
-    /*do {
+    do {
         next();
-    } while(!arriving.empty() || !departing.empty());*/
+    } while(!arriving.empty() || !departing.empty());
 
-    //printStats();
+    printStats();
 }
