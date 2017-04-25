@@ -155,13 +155,13 @@ void next()
  *  Function that decrements the fuel in each plane, and refuels
  *  departing planes when necessary.
  */
-void adjustFuel()
+void adjustFuel()   
 {
-    for (int i = 0; i < departing.size(); i++) {
+    for (int i = 0; i < departing.size(); i++) {    
         departing[i].fuel--;
-        if (departing[i].fuel < 20) {
-            departing[i].fuel = departing[i].tankSize;
-            departing[i].sched_time += 10;
+        if (departing[i].fuel < 20) {                   //if a departing plane has less than 20 units of fuel has to refuel
+            departing[i].fuel = departing[i].tankSize;  //fuel goes back to original amount which is the size of the tank
+            departing[i].sched_time += 10;              //adds 10 units of time to the scheduled time of the plane
             beforeTIME.push_back(departing[i]);
             departing.erase(departing.begin() + i);
             i--;
@@ -196,16 +196,16 @@ void processPlanes()
     // ...algorithm that determines if and how many planes can depart
     
     
-    if(arriving.size() <= 0) {
+    if(arriving.size() <= 0) {   //if there are no planes in the arriving list depart 2 planes
         departPlanes(2);
     }
-    else if(departing.size() <= 0) {
+    else if(departing.size() <= 0) {  //if there are no planes in the departing list let 2 planes arrive
         landPlanes(2);
     }
     else {
         bool done = false;
         for(int i = arriving.size() - 1; i >= 0 && !done; i++) {
-            if(arriving[i].fuel <= (arriving.size() - 1 - i)) {
+            if(arriving[i].fuel <= (arriving.size() - 1 - i)) { //if a planes fuel is less than or equal to its index then 2 planes need to land
                 landPlanes(2);
                 done = true;
             }
@@ -219,14 +219,14 @@ void processPlanes()
     
     
     //process crashed planes
-    for (int i = 0; i < arriving.size(); i++) {
-        if (arriving[i].fuel == -1) {
-            numCrash++;
-            numPeopleKilled += arriving[i].passengers;
-            if (arriving[i].Fam) {
-                numGrandKilled++;
+    for (int i = 0; i < arriving.size(); i++) {     //loops through the arriving plane list 
+        if (arriving[i].fuel == -1) {               // if an arriving plane has no fuel left the number of crashed planes increases
+            numCrash++;                             
+            numPeopleKilled += arriving[i].passengers;  //the number of people killed also increases by the amount of passengers were on the plane
+            if (arriving[i].Fam) {                      //if the plane had grandchildren on it the number of grand children killed also increase
+                numGrandKilled++;                       
             }
-            cargoDestroyed += arriving[i].cargo;
+            cargoDestroyed += arriving[i].cargo;        //the number of cargo destroyed increases by the amount of cargo that was on the plane
             arriving.erase(arriving.begin() + i);
             i--;
         }
@@ -247,7 +247,7 @@ void departPlanes(int num) {
     }
 }
 
-void landPlanes(int num) {
+void landPlanes(int num) {  //accounts for the number of planes that landed safely
     while(arriving.size() > 0 && num > 0) {
         plane p = arriving[arriving.size() - 1];
         arriving.pop_back();
@@ -349,7 +349,7 @@ void addPlanes()
     }
 }
 
-void printStats()
+void printStats()      //prints the statistics that were calculated in the process planes, depart planes, land planes fucntions
 {
     cout << "Average Take off wait time: " << (double)takeOffWaitTime / numDeparting << endl;
     cout << "Average landing wait time: " << (double)landingWaitTime / numArriving <<  endl;
@@ -405,7 +405,7 @@ int main()
     char command;
     char wait; // variable to allow user to press enter to continue reading file
     
-    input.open("/Users/erniedefoy/Desktop/planes.txt", ios::in);
+    input.open("/Users/erniedefoy/Desktop/planes.txt", ios::in);    //opens the input file give
     
     if (!input.is_open())
     {
